@@ -9,15 +9,19 @@ import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.*;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import solution.chat.ai.innova.gptinstallerbot.exception.DataNotFoundException;
 import solution.chat.ai.innova.gptinstallerbot.exception.NoResponseException;
 import solution.chat.ai.innova.gptinstallerbot.handler.impl.*;
+import solution.chat.ai.innova.gptinstallerbot.models.AppUser;
+import solution.chat.ai.innova.gptinstallerbot.service.entity.AppUserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 public class TelegramChatBot extends TelegramLongPollingBot {
@@ -26,10 +30,10 @@ public class TelegramChatBot extends TelegramLongPollingBot {
 
     @Autowired
     private MenuStrategy menuStrategy;
-
     @Autowired
     private OpenAIService openAIService;
-
+    @Autowired
+    private AppUserService appUserService;
 
     public TelegramChatBot(String botToken, String botUserName) {
         super(botToken);
@@ -80,6 +84,7 @@ public class TelegramChatBot extends TelegramLongPollingBot {
     }
 
     private void processTextMessage(Update update) {
+        saveUserIfNotExist(update);
         try {
             SendMessage sendMessage = menuStrategy.getHandler(update.getMessage().getText()).getMenu(update);
             if ((sendMessage.getText().length() > 4009) && (sendMessage.getText().length() < 8018)) {
@@ -109,6 +114,22 @@ public class TelegramChatBot extends TelegramLongPollingBot {
                 sendAnswerMessage(sendMessage);
             }
         }
+    }
+
+    private void saveUserIfNotExist(Update update) {
+        AppUser appUser = appUserService.findByChatId(update.getMessage().getChatId())
+                .orElse(buildAppUserByUpdate(update));
+        appUserService.save(appUser);
+    }
+
+    private AppUser buildAppUserByUpdate(Update update) {
+        User user = update.getMessage().getFrom();
+        return AppUser.builder()
+                .chatId(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .username(user.getUserName())
+                .build();
     }
 
     private void initializeMenu() {
