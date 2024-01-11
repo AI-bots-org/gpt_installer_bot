@@ -27,8 +27,11 @@
         @EventListener({ContextRefreshedEvent.class})
         public void init() {
             try {
+                TelegramChatBot bot = telegramChatBot();
+                bot.clearWebhook();
                 TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
                 telegramBotsApi.registerBot(telegramChatBot());
+
             } catch (TelegramApiException e) {
                 throw new RuntimeException("Can't initialize bot ", e);
             }

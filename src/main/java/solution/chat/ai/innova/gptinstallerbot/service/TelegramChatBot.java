@@ -1,8 +1,6 @@
 package solution.chat.ai.innova.gptinstallerbot.service;
 
 
-import javassist.NotFoundException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -21,7 +19,6 @@ import solution.chat.ai.innova.gptinstallerbot.service.entity.AppUserService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 
 public class TelegramChatBot extends TelegramLongPollingBot {
